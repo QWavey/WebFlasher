@@ -73,16 +73,16 @@ body {
   justify-content: center;
 }
 
-/* -------- Card container (O.MG-scale) -------- */
+/* -------- Card container (O.MG proportions: 4:7 columns) -------- */
 .card {
   width: 100%;
-  max-width: 780px;
+  max-width: 960px;
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: 6px;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 4fr 7fr;
 }
 
 /* -------- Brand slab -------- */
