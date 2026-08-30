@@ -194,6 +194,8 @@ $('btnConfirmPlug').onclick = () => {
 };
 
 $('btnConnect').onclick = async () => {
+  const btn = $('btnConnect');
+  btn.classList.add('loading');
   try {
     setStepState('s2', 'active');
     device = await navigator.usb.requestDevice({
@@ -221,6 +223,8 @@ $('btnConnect').onclick = async () => {
   } catch (e) {
     log("connect: " + e.message, "err");
     setStepState('s2', 'error');
+  } finally {
+    btn.classList.remove('loading');
   }
 };
 
@@ -237,8 +241,11 @@ $('fileHex').onchange = async ev => {
 $('btnFlash').onclick = async () => {
   if (!device) { log("flash: connect first", "err"); return; }
   if (!hexBytes) { try { await loadBundled(); } catch(e){ log("bundled firmware: " + e.message, "err"); return; } }
+  const btn = $('btnFlash');
+  btn.classList.add('loading');
+  document.querySelector('.progress')?.classList.remove('idle');
   try {
-    $('btnFlash').disabled = true;
+    btn.disabled = true;
     setStepState('s3', 'active');
     await chipErase();
     await programAll(hexBytes, hexBase);
@@ -249,7 +256,10 @@ $('btnFlash').onclick = async () => {
   } catch (e) {
     log("flash: " + e.message, "err");
     setStepState('s3', 'error');
-    $('btnFlash').disabled = false;
+    btn.disabled = false;
+  } finally {
+    btn.classList.remove('loading');
+    setTimeout(() => document.querySelector('.progress')?.classList.add('idle'), 800);
   }
 };
 
