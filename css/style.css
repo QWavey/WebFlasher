@@ -73,29 +73,29 @@ body {
   justify-content: center;
 }
 
-/* -------- Card container -------- */
+/* -------- Card container (O.MG-scale) -------- */
 .card {
   width: 100%;
-  max-width: 980px;
+  max-width: 780px;
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: 6px;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 260px 1fr;
 }
 
 /* -------- Brand slab -------- */
 .brand {
   background: var(--accent);
   color: var(--accent-fg);
-  padding: 32px 26px 26px;
+  padding: 26px 22px 22px;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  min-height: 620px;
+  gap: 16px;
+  min-height: 540px;
 }
 .brand::before {
   content: "";
@@ -115,7 +115,7 @@ body {
 .brand h1.wordmark {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-weight: 700;
-  font-size: 34px;
+  font-size: 28px;
   line-height: 1;
   letter-spacing: -0.02em;
   margin: 6px 0 0;
@@ -129,7 +129,7 @@ body {
   margin: auto 0;
   display: flex; align-items: center; justify-content: center;
 }
-.brand .art svg { width: 150px; height: auto; color: var(--accent-fg); }
+.brand .art svg { width: 130px; height: auto; color: var(--accent-fg); }
 .brand .specs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -155,7 +155,7 @@ body {
 
 /* -------- Content column -------- */
 .content {
-  padding: 26px 30px 30px;
+  padding: 22px 24px 24px;
   min-width: 0;
 }
 
@@ -269,15 +269,22 @@ body {
 
 .step-header {
   display: grid;
-  grid-template-columns: 40px 1fr auto;
+  grid-template-columns: 34px 1fr auto;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  cursor: pointer;
+  padding: 11px 14px;
   background: var(--panel);
   color: var(--fg);
   transition: background 0.15s, color 0.15s;
+  cursor: not-allowed;
+  user-select: none;
 }
+.step.active .step-header,
+.step.done .step-header {
+  cursor: pointer;
+}
+.step.locked .step-header { opacity: 0.55; }
+.step.locked .chevron { display: none; }
 .step.active .step-header {
   background: var(--accent);
   color: var(--accent-fg);

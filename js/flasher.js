@@ -27,11 +27,21 @@ function bar(pct, label) {
 }
 
 // ---- Step accordion / state ----
+// Locked-forward wizard: users can't jump ahead. Future steps stay locked
+// (no cursor, no click). Current and completed steps can be re-opened.
 const stepOrder = ['s1', 's2', 's3'];
 function setStepState(id, state) {
   const el = document.getElementById(id);
-  el.classList.remove('active', 'done', 'error');
+  el.classList.remove('active', 'done', 'error', 'locked');
   if (state) el.classList.add(state);
+}
+function lockAhead(currentId) {
+  const idx = stepOrder.indexOf(currentId);
+  stepOrder.forEach((s, i) => {
+    const el = document.getElementById(s);
+    if (i > idx && !el.classList.contains('done')) el.classList.add('locked');
+    else el.classList.remove('locked');
+  });
 }
 function openStep(id) {
   stepOrder.forEach(s => document.getElementById(s).classList.remove('open'));
@@ -40,6 +50,8 @@ function openStep(id) {
 document.querySelectorAll('.step-header').forEach(h => {
   h.addEventListener('click', e => {
     const step = h.parentElement;
+    if (step.classList.contains('locked')) return; // gated
+    if (!step.classList.contains('active') && !step.classList.contains('done')) return;
     step.classList.toggle('open');
   });
 });
@@ -172,11 +184,13 @@ async function loadBundled() {
 // ---- UI ----
 openStep('s1');
 setStepState('s1', 'active');
+lockAhead('s1');
 
 $('btnConfirmPlug').onclick = () => {
   setStepState('s1', 'done');
   setStepState('s2', 'active');
   openStep('s2');
+  lockAhead('s2');
 };
 
 $('btnConnect').onclick = async () => {
@@ -200,6 +214,7 @@ $('btnConnect').onclick = async () => {
     setStepState('s2', 'done');
     setStepState('s3', 'active');
     openStep('s3');
+    lockAhead('s3');
     $('btnFlash').disabled = false;
     $('btnConnect').disabled = true;
     if (!hexBytes) { try { await loadBundled(); } catch(e){ log("bundled firmware: " + e.message, "err"); } }
