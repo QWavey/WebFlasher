@@ -29,8 +29,11 @@
 
   <!-- ─────────── top strip ─────────── -->
   <header class="box-top">
-    <p class="brandline">RUBBERLESS<span class="sep">&middot;</span>DUCKY
-      <span class="ver">WebFlasher v0-alpha</span></p>
+    <div class="box-lead">
+      <a class="backlink" href="https://qwavey.github.io/flashers/">&#8592; all flashers</a>
+      <p class="brandline">RUBBERLESS<span class="sep">&middot;</span>DUCKY
+        <span class="ver">WebFlasher v0-alpha</span></p>
+    </div>
     <p class="status" id="status" data-state="idle">
       <span class="dot" aria-hidden="true"></span><span id="statusText">No device</span>
     </p>
@@ -99,6 +102,10 @@
             <rect x="74" y="214" width="10" height="18" rx="1"/>
             <rect x="216" y="214" width="10" height="18" rx="1"/>
           </g>
+
+          <!-- status LED -->
+          <g class="part"><rect x="190" y="244" width="16" height="12" rx="1"/></g>
+          <circle class="led" cx="198" cy="250" r="3.6"/>
 
           <!-- X1 crystal, left edge -->
           <g class="part">
