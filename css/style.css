@@ -276,6 +276,12 @@ body[data-state="live"]  .device .led { fill: var(--accent); }
 body[data-state="ok"]    .device .led { fill: var(--ok); }
 body[data-state="error"] .device .led { fill: var(--err); }
 
+/* metal keyring: a bright split-ring with a thin inner edge + a highlight arc */
+.device .keyring .kr-o    { fill: none; stroke: var(--white);     stroke-width: 4; }
+.device .keyring .kr-i    { fill: none; stroke: var(--gray-2);    stroke-width: 1.4; }
+.device .keyring .kr-bail { fill: none; stroke: var(--white);     stroke-width: 3; stroke-linecap: round; }
+.device .keyring .kr-hi   { fill: none; stroke: var(--surface-1); stroke-width: 1.6; stroke-linecap: round; }
+
 .spec {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -808,7 +814,7 @@ body[data-state="error"] .view .readout .ph { color: var(--err); }
 
 .fig { overflow: hidden; }   /* crop the boot zoom cleanly */
 
-.device { transition: transform 1.2s var(--e-apple); transform-origin: var(--boot-origin, 52% 55%); }
+.device { transition: transform 1.2s var(--e-apple); transform-origin: var(--boot-origin, 52% 59%); }
 body[data-step="1"] .device { transform: scale(2.3); }
 
 .device .callout { transition: opacity var(--d-3) var(--e-out); }
