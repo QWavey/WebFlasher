@@ -251,6 +251,7 @@ let iface  = 0;
 let hexBytes = null;
 let hexBase  = null;
 let flashing = false;
+let stopping = false;
 
 // ---- Intel HEX ------------------------------------------------------------
 function parseHex(text) {
@@ -579,11 +580,21 @@ async function runFlash() {
     await programAll(hexBytes, hexBase);
     await launchDevice();
 
+    if (stopping) throw new Error('stopped');
     setPhase('done');
     mapState('done');
     setStatus('Flashed', 'ok');
     log('done. the device will re-enumerate as an HID keyboard.', 'ok');
-    setTimeout(() => goTo(4), 700);
+    // "Flash multiple devices": drop this unit and loop back to Connect for the next.
+    if ($('flashMany') && $('flashMany').checked) {
+      log('flash many: unplug this device, plug the next, then Connect.', 'ok');
+      device = null;
+      $('btnFlash').disabled = true;
+      setStatus('Next device', 'ok');
+      setTimeout(() => goTo(2), 900);
+    } else {
+      setTimeout(() => goTo(4), 700);
+    }
   } catch (e) {
     const msg = (e && e.message) ? e.message : String(e);
     log('flash: ' + msg, 'err');
@@ -598,6 +609,32 @@ async function runFlash() {
     flashing = false;
   }
 }
+
+// ---- Stop / reset: clear the progress cells and drop the connection --------
+function clearPageMap() {
+  mapCells.forEach(c => c.classList.remove('on', 'next', 'fail'));
+  const wrap = $('pagemap');
+  if (wrap) { wrap.classList.remove('is-done', 'is-error', 'is-erasing'); wrap.setAttribute('aria-valuenow', '0'); }
+  if ($('rdDone')) $('rdDone').textContent = '0';
+  if ($('rdPages')) $('rdPages').textContent = '0';
+  setPhase('ready'); showFlashError(null);
+}
+async function stopFlash() {
+  // Abort an in-flight program by closing the USB device (the next control
+  // transfer then throws and its catch marks the error), then wipe the boxes.
+  if (flashing) {
+    stopping = true;
+    log('stop: aborting flash', 'err');
+    try { if (device) await device.close(); } catch (_) {}
+    device = null;
+  }
+  flashing = false;
+  clearPageMap();
+  setStatus(device ? 'Connected' : 'No device', device ? 'ok' : 'idle');
+  $('btnFlash').disabled = !device;
+  stopping = false;
+}
+const _btnStop = $('btnStop'); if (_btnStop) _btnStop.addEventListener('click', stopFlash);
 
 // Flashing cannot be undone, so it takes a deliberate press-and-hold rather
 // than a single click that a stray tap could trigger. The fill is a plain CSS

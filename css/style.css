@@ -292,6 +292,7 @@ body[data-step="1"] .device .boot path { stroke: var(--accent); }
 /* The board's status LED is a fixed hardware colour, not a UI signal. It only
    blinks while data is actually moving (flashing), the way the real one does. */
 .device .led { fill: var(--led, #30D158); }
+body[data-state="ok"] .device .led { animation: ledBlink 1.4s steps(1, end) infinite; }
 body[data-state="live"] .device .led { animation: ledBlink 0.5s steps(1, end) infinite; }
 @keyframes ledBlink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.25; } }
 
@@ -889,3 +890,15 @@ body[data-state="ok"] .fx-port { opacity: 1; animation: fxseat 0.5s var(--e-appl
     stroke-dashoffset: 0 !important;
   }
 }
+
+/* flash-view: "flash many" checkbox + Stop (danger) button */
+.view .chk {
+  display: flex; align-items: center; gap: var(--s-2);
+  margin-top: var(--s-3);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px; color: var(--gray-1); cursor: pointer; user-select: none;
+}
+.view .chk input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+.view .chk span { color: var(--gray-2); }
+.btn.danger { color: var(--err); border-color: color-mix(in srgb, var(--err) 45%, var(--line-2)); }
+.btn.danger:hover { border-color: var(--err); background: color-mix(in srgb, var(--err) 12%, transparent); }
