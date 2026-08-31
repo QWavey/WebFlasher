@@ -66,14 +66,24 @@
             <rect x="74" y="96" width="152" height="356" rx="4"/>
           </g>
 
-          <!-- microSD socket: metal cage, card, and the eight spring contacts -->
+          <!-- microSD push-push socket: stamped-steel cage, the inserted card
+               with its cut corner and label, and the row of gold contacts on
+               the exposed lower lip. Matches the real socket close-up. -->
           <g class="part">
-            <rect x="80" y="112" width="140" height="140" rx="2"/>
-            <path d="M88 144 L112 120"/>
-            <path d="M86 126 V232 Q86 240 94 242"/>
-            <path d="M214 126 V232 Q214 240 206 242"/>
-            <path d="M96 128 H186 L204 146 V210 H96 Z" class="card"/>
-            <path d="M104 136 H178" class="card"/>
+            <rect x="80" y="110" width="140" height="128" rx="2"/>
+            <path d="M80 122 H220 M80 226 H220"/>
+            <path d="M92 110 V98 H128 V110 M170 110 V98 H206 V110"/>
+            <circle cx="150" cy="116" r="2.4" class="fillpin"/>
+          </g>
+          <!-- inserted card, cut corner top-right -->
+          <g class="card">
+            <path d="M96 128 H188 L204 144 V208 H96 Z"/>
+            <path d="M96 140 H204"/>
+            <text x="150" y="180" class="sd">12</text>
+          </g>
+          <!-- exposed contact fingers on the lower lip -->
+          <g class="pins">
+            <path d="M104 232 V244 M114 232 V244 M124 232 V244 M134 232 V244 M144 232 V244 M154 232 V244 M164 232 V244 M174 232 V244"/>
           </g>
           <g class="passive">
             <rect x="100" y="222" width="11" height="9" rx="2"/>
@@ -159,6 +169,29 @@
             <path d="M201 494 h-12 v18 h12"/>
             <rect x="120" y="476" width="24" height="26" rx="3"/>
             <rect x="156" y="476" width="24" height="26" rx="3"/>
+          </g>
+
+          <!-- state FX layer: press hint, data flow, connected badge, port -->
+          <g class="fx">
+            <g class="fx-data">
+              <path class="fx-trace l" d="M132 470 V438"/>
+              <path class="fx-trace r" d="M168 470 V450 Q168 442 160 440 V438"/>
+              <circle class="fx-pk l"    r="3.2"/><circle class="fx-pk l d2" r="3.2"/><circle class="fx-pk l d3" r="3.2"/>
+              <circle class="fx-pk r"    r="3.2"/><circle class="fx-pk r d2" r="3.2"/><circle class="fx-pk r d3" r="3.2"/>
+            </g>
+            <rect class="fx-sink" x="104" y="376" width="62" height="62" rx="2"/>
+            <g class="fx-press">
+              <circle class="fx-ring" cx="171" cy="313" r="20"/>
+              <path class="fx-arrow" d="M171 276 v20 M163 288 l8 8 l8 -8"/>
+            </g>
+            <g class="fx-check">
+              <circle cx="330" cy="70" r="20"/>
+              <path class="fx-tick" d="M320 70 l7 8 l14 -16"/>
+            </g>
+            <g class="fx-port">
+              <path d="M96 548 H110 M190 548 H204"/>
+              <rect class="fx-shroud" x="95" y="540" width="110" height="24" rx="2"/>
+            </g>
           </g>
 
           <!-- callouts -->
