@@ -151,7 +151,9 @@ code {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 13px; font-weight: 600; letter-spacing: 0.07em;
 }
-.brandline span { color: var(--accent); }
+/* A quiet separator, not an accent. Orange is reserved for live state; a
+   coloured dot in the wordmark is exactly the decorative accent to avoid. */
+.brandline .sep { color: var(--gray-2); font-weight: 400; }
 .brandline .ver {
   color: var(--gray-2); font-weight: 400; letter-spacing: 0.04em;
   margin-left: var(--s-3);
@@ -359,29 +361,26 @@ body[data-state="error"] .device .led { fill: var(--err); }
 .rail li.done .railbtn:hover { color: var(--white); }
 .railbtn b { font-weight: 500; }
 
+/* Every pip is the same clockwise dial, filled by --fill (a registered
+   <number>, so the arc sweeps instead of snapping). The opaque --surface-1
+   base sits over the track so the line never shows through the empty part. */
 .pip {
   width: 16px; height: 16px; flex: none;
   border-radius: 50%;
-  background: var(--surface-1);
-  box-shadow: inset 0 0 0 2px currentColor;
-  transition: background var(--d-2) var(--e-out),
-              box-shadow var(--d-2) var(--e-out);
-}
-.rail li.on { color: var(--accent); }
-
-/* The pip you are on doubles as the overall progress dial: a quarter filled on
-   Brief, a half on DFU, three quarters on Connect, solid white on Flash. It
-   sweeps between them because --fill is a registered <number>. The track ring
-   is neutral, so the dial reads as one white arc rather than a ringed blob. */
-.rail li { transition: --fill var(--d-3) var(--e-apple); }
-.rail li.on .pip {
   background:
     conic-gradient(var(--white) calc(var(--fill, 0) * 1%), rgba(0, 0, 0, 0) 0),
     var(--surface-1);
   box-shadow: inset 0 0 0 2px var(--line-2);
 }
+
+/* The pip fills as the connector reaches it: the line runs first (no delay,
+   above), the fill follows on a delay so it lands just as the line arrives —
+   "the line fills the circle only when the line is there". --fill carries the
+   dial fractions too (25/50/75/100), set per step in js/flasher.js. */
+.rail li { transition: --fill var(--d-2) var(--e-apple) var(--d-3); }
+
+.rail li.on   { color: var(--accent); }
 .rail li.done { color: var(--white); }
-.rail li.done .pip { background: currentColor; box-shadow: inset 0 0 0 2px currentColor; }
 
 /* --- views -------------------------------------------------------------- */
 

@@ -97,10 +97,15 @@ function syncRail(n) {
     const current = i === n && n < LAST_STEP;
     li.classList.toggle('on', current);
     li.classList.toggle('done', i < n);
-    // The current pip shows how far through the wizard you are, not how far
-    // through this one step: Brief is 1/4, Flash is 4/4.
-    if (current) li.style.setProperty('--fill', Math.round((n + 1) / rail.length * 100));
-    else li.style.removeProperty('--fill');
+    // The dial shows overall progress on the current pip (Brief 1/4 … Flash
+    // 4/4); a step already behind you is full. Both use the same --fill, so a
+    // pip fills the same way whether the line is passing through it now or has
+    // already passed.
+    let fill;
+    if (i < n) fill = 100;
+    else if (current) fill = Math.round((n + 1) / rail.length * 100);
+    else fill = 0;
+    li.style.setProperty('--fill', fill);
     if (current) li.setAttribute('aria-current', 'step');
     else li.removeAttribute('aria-current');
     const btn = li.querySelector('.railbtn');

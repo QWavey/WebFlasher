@@ -25,6 +25,8 @@ Why this and not something else:
   and always points at one thing. Nothing decorative is orange.
 - The favicon was kept, so the accent is drawn from it (`#b23f0d` lifted for a
   black background) and the identity stays coherent.
+- The `·` in the wordmark is a **neutral** separator (`--gray-2`), not an accent.
+  A coloured dot in a wordmark is decoration, and orange is reserved for state.
 
 ## Colour
 
@@ -120,17 +122,25 @@ Cells are 17px with a 5px radius and fill **white**, not orange: white is
 written data, orange stays reserved for the one page in flight. Green sweeps
 the map in write order on success.
 
-The step rail follows the same rule — a completed step is a white pip on a
-white 6px track, the current step is orange, and green is left to mean one
-thing only: the run finished.
-
-The rail is **one continuous line** with the pips sitting on top of it, not
+The step rail is a **single continuous line** with the pips sitting on it, not
 segments butting into each pip. Each step draws the track from its own pip's
 centre to the next one's (`left: 8px; right: -8px`), which lands flush across
-the column boundary without measuring anything, and the pips are opaque and
-stacked above so the line passes behind them rather than through them. Labels
-sit under the pips, because a single unbroken line cannot also run through
-text.
+the column boundary without measuring anything; the pips are opaque and stacked
+above, so the line passes behind them, not through them. Labels sit under the
+pips, because one unbroken line cannot also run through text.
+
+Every pip is the same clockwise dial driven by `--fill` (a registered
+`<number>`, so it sweeps rather than snaps). The current pip shows overall
+progress — Brief 1/4, DFU 2/4, Connect 3/4, Flash 4/4 — and a step already
+behind you is full. There is **no orange on the pips**: the ring is neutral and
+fill is white, so the dial reads as one arc rather than a ringed blob. The
+current *step label* stays orange, which is the one legitimate "here, now" use.
+
+The pip fills **after** the line reaches it. On a step change the connector runs
+first (520 ms, no delay) and the pip's `--fill` is delayed by that same 520 ms,
+so the line visibly arrives at the circle and *then* the circle fills. Measured:
+the line is at 99% while the pip is still empty, and the pip only begins once the
+line hits 100%.
 
 Above 96 pages one cell stands for several so a 256 KB image still fits; the
 page counts beside it stay true either way.
