@@ -1,580 +1,800 @@
-/* Rubberless-Ducky WebFlasher — workshop-manual direction */
+/* ==========================================================================
+   Rubberless-Ducky WebFlasher
+   Direction: instrument panel. One box on a black field, white type, and a
+   single orange that only ever means "live". Nothing scrolls: the box is sized
+   to the viewport and the wizard swaps one view at a time inside it.
+   Every literal below belongs to the system documented in DESIGN.md.
+   ========================================================================== */
 
 :root {
-  --page-bg:   #e5e5e0;
-  --card-bg:   #f5f4f1;
-  --panel:     #ffffff;
-  --fg:        #16161a;
-  --fg-2:      #3a3a41;
-  --muted:     #6b6b73;
-  --line:      #cfcec9;
-  --line-2:    #dedcd7;
-  --accent:    #b23f0d;
-  --accent-2:  #c2410c;
-  --accent-3:  #7a2607;
-  --accent-fg: #fff5e6;
-  --warn-fg:   #6a2c05;
-  --warn-bg:   #f3e0c9;
-  --warn-line: #d99555;
-  --ok-fg:     #14532d;
-  --ok-bg:     #d4ecc9;
-  --ok-line:   #4b8f6a;
-  --err-fg:    #7f1d1d;
-  --err-bg:    #f3ccc9;
-  --err-line:  #b0322a;
-  --code-bg:   #e3e1dc;
-  --code-fg:   #16161a;
+  /* --- Surface ---------------------------------------------------------- */
+  --black:     #000000;   /* page. True black, the way hardware pages are lit */
+  --surface-1: #0A0A0B;   /* the box */
+  --surface-2: #101013;   /* left slab, drawers */
+  --surface-3: #17171B;   /* wells: meter track, code */
+  --line-1:    #1F1F23;   /* hairline, at rest */
+  --line-2:    #34343B;   /* hairline, hover or focus */
+
+  /* --- Type colour ------------------------------------------------------ */
+  --white:  #F5F5F7;      /* primary. Not #fff: halation on true black */
+  --gray-1: #A1A1A6;      /* secondary prose          8.1:1 on black */
+  --gray-2: #8A8A8F;      /* meta, labels, dimensions 6.1:1 on black */
+
+  /* --- State ------------------------------------------------------------ */
+  --accent: #FF6A13;      /* live only: progress, current step   7.3:1 */
+  --ok:     #30D158;      /* 10.4:1 */
+  --err:    #FF453A;      /* 6.2:1 */
+
+  /* --- Shape ------------------------------------------------------------ */
+  --r-1: 3px;      /* code, pips */
+  --r-cell: 5px;   /* page-map cells */
+  --r-2: 8px;   /* controls, rows */
+  --r-3: 16px;  /* the box */
+
+  /* --- Space ------------------------------------------------------------ */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px;
+
+  /* --- Motion ----------------------------------------------------------- */
+  --e-out:   cubic-bezier(0.22, 0.61, 0.36, 1);
+  --e-apple: cubic-bezier(0.28, 0.11, 0.32, 1);
+  --d-1: 160ms; --d-2: 300ms; --d-3: 520ms; --d-4: 820ms;
+
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --page-bg:   #08080a;
-    --card-bg:   #16161a;
-    --panel:     #1c1c22;
-    --fg:        #eeeeeb;
-    --fg-2:      #c9c9c3;
-    --muted:     #8a8a92;
-    --line:      #2a2a30;
-    --line-2:    #22222a;
-    --accent:    #f97316;
-    --accent-2:  #ea580c;
-    --accent-3:  #7c2d12;
-    --accent-fg: #16110c;
-    --warn-fg:   #fbd693;
-    --warn-bg:   #33220b;
-    --warn-line: #b8752a;
-    --ok-fg:     #bbf7d0;
-    --ok-bg:     #0f2a1a;
-    --ok-line:   #4b8f6a;
-    --err-fg:    #fecaca;
-    --err-bg:    #2d1010;
-    --err-line:  #b0322a;
-    --code-bg:   #1c1c22;
-    --code-fg:   #eeeeeb;
-  }
-}
+*, *::before, *::after { box-sizing: border-box; }
 
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-
-/* Custom cursor: subtle amber precision reticle, slightly bolder on interactive */
-:root {
-  --ease-spring: cubic-bezier(0.34, 1.4, 0.42, 1);
-  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --cursor-default: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'><circle cx='9' cy='9' r='6' fill='none' stroke='%23b23f0d' stroke-width='1'/><circle cx='9' cy='9' r='1' fill='%23b23f0d'/></svg>") 9 9;
-  --cursor-pointer: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><circle cx='10' cy='10' r='7' fill='none' stroke='%23b23f0d' stroke-width='1.5'/><circle cx='10' cy='10' r='2.5' fill='%23b23f0d'/></svg>") 10 10;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --cursor-default: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'><circle cx='9' cy='9' r='6' fill='none' stroke='%23f97316' stroke-width='1'/><circle cx='9' cy='9' r='1' fill='%23f97316'/></svg>") 9 9;
-    --cursor-pointer: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><circle cx='10' cy='10' r='7' fill='none' stroke='%23f97316' stroke-width='1.5'/><circle cx='10' cy='10' r='2.5' fill='%23f97316'/></svg>") 10 10;
-  }
-}
-html, body { cursor: var(--cursor-default), default; }
-a, button, .dl, .fileinput, .step.active .step-header, .step.done .step-header,
-label.fileinput, .iconbtn { cursor: var(--cursor-pointer), pointer; }
-.step.locked .step-header, button:disabled { cursor: not-allowed; }
+html, body { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--page-bg);
-  color: var(--fg);
-  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
-  font-size: 15px;
-  line-height: 1.55;
+  background: var(--black);
+  color: var(--white);
+  font-family: "Archivo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  padding: 32px 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 
-/* -------- Card container (matches O.MG ~1020x650) -------- */
-.card {
-  width: 100%;
-  max-width: 1000px;
-  background: var(--card-bg);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 4fr 7fr;
-  /* Apple-clean entrance */
-  animation: rise 0.55s var(--ease-spring) both;
-}
-@keyframes rise {
-  from { opacity: 0; transform: translateY(12px) scale(0.985); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .card { animation: none; }
-  * { transition: none !important; }
+::selection { background: var(--accent); color: #120600; }
+a { color: inherit; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--r-1); }
+
+/* goTo() moves focus to the new view's heading so screen readers land there.
+   It is not an interactive control, so it must not draw a focus ring. */
+.view h1:focus, .view h1:focus-visible { outline: none; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-/* -------- Brand slab (content-hugging, no forced tall min-height) -------- */
-.brand {
-  background: var(--accent);
-  color: var(--accent-fg);
-  padding: 22px 20px 20px;
+code {
+  font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.875em; font-weight: 500;
+  background: var(--surface-3); color: var(--white);
+  padding: 0.14em 0.4em; border-radius: var(--r-1);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Stage: one screen, no page scroll
+   ========================================================================== */
+
+.stage {
+  height: 100svh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: var(--s-4);
+  padding: var(--s-5);
+}
+
+.legal {
+  flex: none;
+  max-width: 74ch; margin: 0;
+  text-align: center;
+  font-size: 12px; line-height: 1.6;
+  color: var(--gray-2);
+}
+.legal a { color: var(--gray-2); text-underline-offset: 2px; }
+.legal a:hover { color: var(--white); }
+
+/* ==========================================================================
+   The box
+   ========================================================================== */
+
+.box {
   position: relative;
+  width: 100%;
+  max-width: 1040px;
+  flex: 1 1 auto;
+  max-height: 660px;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--surface-1);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-3);
+  /* clip, not hidden: the closed drawers sit at translateY(100%), and a
+     transformed child still contributes scrollable overflow. With `hidden`
+     the box becomes a scroll container and a focus() can shove it out of
+     alignment. `clip` crops the same pixels without one. */
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  overflow: clip;
+  animation: boxIn var(--d-4) var(--e-apple) both;
 }
-.brand::before {
-  content: "";
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(180deg, transparent 0 3px, rgba(0,0,0,0.035) 3px 4px);
-  pointer-events: none;
+
+@keyframes boxIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.988); }
+  to   { opacity: 1; transform: none; }
 }
-.brand > * { position: relative; z-index: 1; }
-.brand .mark {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  opacity: 0.75;
+
+/* --- top strip ---------------------------------------------------------- */
+
+.box-top {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-4);
+  padding: var(--s-3) var(--s-5);
+  border-bottom: 1px solid var(--line-1);
+}
+
+.brandline {
   margin: 0;
-}
-.brand h1.wordmark {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-weight: 700;
-  font-size: 28px;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  margin: 6px 0 0;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.07em;
 }
-.brand h1.wordmark span {
-  display: block;
-  font-weight: 400;
-  color: rgba(255, 245, 230, 0.7);
+.brandline span { color: var(--accent); }
+.brandline .ver {
+  color: var(--gray-2); font-weight: 400; letter-spacing: 0.04em;
+  margin-left: var(--s-3);
 }
-.brand .art {
-  margin: auto 0;
-  display: flex; align-items: center; justify-content: center;
+
+.status {
+  display: flex; align-items: center; gap: var(--s-2); margin: 0;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--gray-2);
+  white-space: nowrap;
 }
-.brand .art svg {
-  width: 110px; height: auto; color: var(--accent-fg);
-  transition: transform 0.6s var(--ease-spring);
+.status .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--line-2);
+  transition: background var(--d-2) var(--e-out);
 }
-.brand:hover .art svg { transform: translateY(-2px); }
-.brand .art svg .led {
-  animation: ledPulse 2.2s var(--ease-smooth) infinite;
-  transform-origin: 100px 180px;
+.status[data-state="live"]  { color: var(--accent); } .status[data-state="live"]  .dot { background: var(--accent); }
+.status[data-state="ok"]    { color: var(--ok); }     .status[data-state="ok"]    .dot { background: var(--ok); }
+.status[data-state="error"] { color: var(--err); }    .status[data-state="error"] .dot { background: var(--err); }
+
+/* --- body --------------------------------------------------------------- */
+
+.box-body {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  min-height: 0;
 }
-@keyframes ledPulse {
-  0%, 100% { opacity: 0.4; }
-  50%      { opacity: 1; }
+
+/* ==========================================================================
+   Left slab: the drawing and the four figures worth knowing
+   ========================================================================== */
+
+.slab {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  border-right: 1px solid var(--line-1);
+  background: var(--surface-2);
+  min-height: 0;
 }
-.brand .specs {
+
+.fig {
+  margin: 0;
+  min-height: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-4) 0;
+}
+
+.device {
+  height: 100%;
+  max-height: 300px;   /* the figure supports the wizard, it does not compete */
+  width: auto; max-width: 100%; display: block;
+}
+
+.fig figcaption {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; letter-spacing: 0.05em; color: var(--gray-2);
+}
+
+/* Line hierarchy: shell and board read first, parts second, annotation last. */
+.device .shell,
+.device .board,
+.device .part {
+  fill: none; stroke: var(--white);
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.device .shell { stroke-width: 1.5; }
+.device .board { stroke-width: 1.5; }
+.device .part  { stroke-width: 1.1; stroke: var(--gray-1); }
+.device .card  { stroke: var(--line-2); }
+.device .pins  { stroke: var(--gray-2); stroke-width: 0.9; }
+.device .trace { fill: none; stroke: var(--line-2); stroke-width: 0.9; }
+.device .passive { fill: none; stroke: var(--line-2); stroke-width: 1; }
+.device .silk  { fill: none; stroke: var(--line-1); stroke-width: 1; stroke-dasharray: 3 4; }
+.device .ink   { fill: var(--gray-2); stroke: none; }
+.device .drill { fill: var(--surface-2); }
+
+/* Hidden-line convention: the microcontroller is on the reverse of the board,
+   so it is drawn dashed rather than invented onto the side you can see. */
+.device .ghost {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+}
+
+.device .callout { fill: none; stroke: var(--line-2); stroke-width: 0.7; }
+.device .callout circle { fill: var(--accent); stroke: none; }
+.device .callout text {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 23px; font-weight: 500; letter-spacing: 0.02em;
+  fill: var(--gray-2); stroke: none;
+}
+.device .callout.end text { text-anchor: end; }
+.device .callout text.sub { font-size: 20px; fill: var(--gray-2); }
+
+/* The drawing strokes itself on once, then stays put. The dash values are set
+   per shape from js/flasher.js: putting the animation on the <g> looks right
+   in source but does nothing, because an animated value on a parent is not
+   inherited by its children. */
+
+/* Step 02 highlights the button the instructions are talking about. */
+.device .boot rect,
+.device .boot circle,
+.device .boot path { transition: stroke var(--d-2) var(--e-out); }
+body[data-step="1"] .device .boot rect,
+body[data-step="1"] .device .boot circle,
+body[data-step="1"] .device .boot path { stroke: var(--accent); }
+
+/* The LED reads the flash state, because on the real board it does too. */
+.device .led { transition: fill var(--d-2) var(--e-out); }
+body[data-state="live"]  .device .led { fill: var(--accent); }
+body[data-state="ok"]    .device .led { fill: var(--ok); }
+body[data-state="error"] .device .led { fill: var(--err); }
+
+.spec {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: rgba(255, 245, 230, 0.25);
-  border: 1px solid rgba(255, 245, 230, 0.25);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 11px;
+  margin: 0;
+  border-top: 1px solid var(--line-1);
 }
-.brand .specs > div { background: var(--accent); padding: 9px 11px; }
-.brand .specs > div b {
-  display: block; color: rgba(255, 245, 230, 0.7); font-weight: 500;
-  font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.brand .foot {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 11px;
-  color: rgba(255, 245, 230, 0.7);
-  display: flex; justify-content: space-between; gap: 12px;
-}
-.brand .foot a { color: rgba(255, 245, 230, 0.95); text-decoration: underline; text-underline-offset: 2px; }
-
-/* -------- Content column -------- */
-.content {
-  padding: 18px 20px 20px;
+.spec > div {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3);
+  padding: var(--s-2) var(--s-4);
   min-width: 0;
 }
-
-/* Top toolbar */
-.toolbar {
-  display: flex; justify-content: space-between; align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line-2);
-  margin-bottom: 12px;
-}
-.toolbar h2.title {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--fg-2);
+.spec > div:nth-child(odd)  { border-right: 1px solid var(--line-1); }
+.spec > div:nth-child(n+3)  { border-top: 1px solid var(--line-1); }
+.spec dt { font-size: 13px; color: var(--gray-2); }
+.spec dd {
   margin: 0;
-}
-.toolbar .util {
-  display: flex; gap: 6px;
-}
-.iconbtn {
-  width: 30px; height: 30px;
-  display: grid; place-items: center;
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.2s var(--ease-spring),
-              color 0.15s var(--ease-smooth),
-              border-color 0.15s var(--ease-smooth);
-}
-.iconbtn:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
-.iconbtn svg { width: 15px; height: 15px; display: block; }
-
-/* Alert / warn (inline tag + sentence, no block header) */
-.alert {
-  padding: 8px 12px;
-  border-left: 3px solid;
-  border-radius: 0 4px 4px 0;
-  font-size: 12px;
-  line-height: 1.5;
-  margin: 0 0 12px;
-}
-.alert b {
-  display: inline;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-weight: 600; font-size: 10.5px;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  margin-right: 8px;
-}
-.alert.warn { background: var(--warn-bg); color: var(--warn-fg); border-color: var(--warn-line); }
-.alert.info { background: var(--code-bg); color: var(--fg-2); border-color: var(--muted); }
-.alert.ok   { background: var(--ok-bg);   color: var(--ok-fg);   border-color: var(--ok-line); }
-.alert.err  { background: var(--err-bg);  color: var(--err-fg);  border-color: var(--err-line); }
-
-/* Section labels */
-.section-label {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 8px;
+  font-size: 13px; font-weight: 500; color: var(--white);
 }
 
-/* -------- Downloads (single row of 4, wider card allows it) -------- */
-.downloads {
+/* ==========================================================================
+   Wizard panel
+   ========================================================================== */
+
+.panel {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin: 0 0 14px;
-}
-.dl {
-  display: block;
-  padding: 10px 12px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--fg);
-  text-decoration: none;
-  transition: transform 0.22s var(--ease-spring),
-              border-color 0.18s var(--ease-smooth),
-              background 0.18s var(--ease-smooth);
-}
-.dl:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
-  background: var(--card-bg);
-}
-.dl:active { transform: translateY(0); }
-.dl b {
-  display: block;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-weight: 600;
-  font-size: 12px;
-}
-.dl span {
-  display: block;
-  color: var(--muted);
-  font-size: 11px;
-  margin-top: 2px;
-  line-height: 1.35;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
 }
 
-/* -------- Wizard accordion -------- */
-.wizard { display: grid; gap: 0; }
-.step {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 6px;
-  background: var(--panel);
-  transition: border-color 0.25s var(--ease-smooth),
-              box-shadow 0.25s var(--ease-smooth);
-}
-.step.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(178, 63, 13, 0.08); }
-.step.done   { border-color: var(--ok-line); }
-.step.error  { border-color: var(--err-line); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .step.active { box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14); }
-}
+/* --- step rail ---------------------------------------------------------- */
+/* One continuous track with the pips sitting on top of it, rather than
+   separate segments running into each pip. The track is drawn per step from
+   this pip's centre to the next one's, which lands flush across the column
+   boundary and needs no measuring; the pips are opaque and stack above it, so
+   the line passes behind them instead of through them. */
 
-.step-header {
+.rail {
   display: grid;
-  grid-template-columns: 28px 1fr auto;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  background: var(--panel);
-  color: var(--fg);
-  transition: background 0.15s, color 0.15s;
-  cursor: not-allowed;
-  user-select: none;
-}
-.step.active .step-header,
-.step.done .step-header {
-  cursor: pointer;
-}
-.step.locked .step-header { opacity: 0.55; }
-.step.locked .chevron { display: none; }
-.step.active .step-header {
-  background: var(--accent);
-  color: var(--accent-fg);
-}
-.step.done .step-header {
-  background: var(--ok-bg);
-  color: var(--ok-fg);
-}
-.step.error .step-header {
-  background: var(--err-bg);
-  color: var(--err-fg);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  list-style: none;
+  margin: 0;
+  padding: var(--s-4) var(--s-6) var(--s-3);
+  border-bottom: 1px solid var(--line-1);
 }
 
-.step-icon {
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  display: grid; place-items: center;
-  color: inherit;
-  opacity: 0.85;
-}
-.step-icon svg { width: 12px; height: 12px; display: block; }
-.step.active .step-icon { background: rgba(255,245,230,0.15); }
-.step.done .step-icon   { background: var(--ok-line); color: #fff; border-color: var(--ok-line); }
-.step.error .step-icon  { background: var(--err-line); color: #fff; border-color: var(--err-line); }
-
-.step-title {
-  display: flex; flex-direction: column;
-  gap: 1px;
-  line-height: 1.2;
-}
-.step-title .n {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-.step-title .t {
-  font-weight: 600;
-  font-size: 13px;
-}
-
-.chevron {
-  width: 16px; height: 16px;
-  transition: transform 0.32s var(--ease-spring);
-  opacity: 0.6;
-}
-.step.open .chevron { transform: rotate(180deg); }
-.step-icon svg { transition: transform 0.3s var(--ease-spring); }
-.step.done .step-icon svg { animation: pop 0.35s var(--ease-spring); }
-@keyframes pop {
-  0%   { transform: scale(0.5); opacity: 0; }
-  60%  { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(1); }
-}
-
-.step-body {
-  padding: 0 14px;
-  border-top: 1px solid transparent;
-  background: var(--panel);
-  color: var(--fg-2);
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 0.35s var(--ease-smooth),
-              opacity 0.25s var(--ease-smooth) 0.05s,
-              padding 0.3s var(--ease-smooth),
-              border-color 0.3s var(--ease-smooth);
-}
-.step.open .step-body {
-  max-height: 360px;
-  opacity: 1;
-  padding: 12px 14px;
-  border-top-color: var(--line-2);
-}
-.step-body p { margin: 0 0 8px; font-size: 12.5px; line-height: 1.5; }
-.step-body p:last-child { margin: 0; }
-.step-actions {
-  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
-  margin-top: 8px;
-}
-
-/* Buttons (Apple-clean: subtle lift + soft shadow on hover) */
-.btn {
+.rail li {
   position: relative;
-  font: 500 12px/1 "IBM Plex Mono", ui-monospace, monospace;
-  letter-spacing: 0.03em;
-  background: var(--fg);
-  color: var(--card-bg);
-  border: 1px solid var(--fg);
-  padding: 9px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: inline-flex; align-items: center; gap: 8px;
-  transition: transform 0.18s var(--ease-spring),
-              box-shadow 0.2s var(--ease-smooth),
-              background 0.2s var(--ease-smooth),
-              opacity 0.15s var(--ease-smooth);
+  color: var(--gray-2);
 }
-.btn.primary {
-  background: var(--accent);
-  color: var(--accent-fg);
-  border-color: var(--accent);
-}
-.btn.ghost {
-  background: transparent;
-  color: var(--fg);
-  border: 1px solid var(--line);
-}
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.btn:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px -4px rgba(178, 63, 13, 0.35);
-}
-.btn:not(:disabled):active { transform: translateY(0); box-shadow: none; }
-.btn.ghost:hover { box-shadow: none; background: var(--panel); }
 
-/* Loading spinner (shown when .btn has .loading class) */
-.btn .spinner {
-  width: 12px; height: 12px;
-  border: 1.5px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  display: none;
-  animation: spin 0.7s linear infinite;
+.rail li::after {
+  content: "";
+  position: absolute;
+  left: 8px;            /* this pip's centre */
+  right: -8px;          /* the next pip's centre, one column over */
+  top: 8px;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  background-color: var(--line-1);
+  background-image: linear-gradient(var(--white), var(--white));
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  transition: background-size var(--d-3) var(--e-apple);
+  z-index: 0;
 }
-.btn.loading .spinner { display: inline-block; }
+.rail li.done::after { background-size: 100% 100%; }
+.rail li:last-child::after { display: none; }
+
+.railbtn {
+  position: relative;
+  z-index: 1;
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: var(--s-2);
+  padding: 0 var(--s-2) 6px 0;
+  margin: 0 0 -6px;
+  background: none; border: 0; border-radius: var(--r-1);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  color: inherit;
+  cursor: default;
+  transition: color var(--d-2) var(--e-out);
+}
+/* A finished step can be revisited; the one you are on and the ones ahead
+   cannot be jumped to. */
+.rail li.done .railbtn { cursor: pointer; }
+.rail li.done .railbtn:hover { color: var(--white); }
+.railbtn b { font-weight: 500; }
+
+.pip {
+  width: 16px; height: 16px; flex: none;
+  border-radius: 50%;
+  background: var(--surface-1);
+  box-shadow: inset 0 0 0 2px currentColor;
+  transition: background var(--d-2) var(--e-out),
+              box-shadow var(--d-2) var(--e-out);
+}
+.rail li.on   { color: var(--accent); }
+/* The pip you are on doubles as the overall progress dial: a quarter filled on
+   Brief, a half on DFU, three quarters on Connect, solid white on Flash. The
+   ring stays accent so the step you are on is still the thing marked. */
+.rail li.on .pip {
+  background:
+    conic-gradient(var(--white) calc(var(--fill, 0) * 1%), rgba(0, 0, 0, 0) 0),
+    var(--surface-1);
+  box-shadow: inset 0 0 0 2px currentColor;
+  transition: background var(--d-3) var(--e-apple),
+              box-shadow var(--d-2) var(--e-out);
+}
+.rail li.done { color: var(--white); }
+.rail li.done .pip { background: currentColor; box-shadow: inset 0 0 0 2px currentColor; }
+
+/* --- views -------------------------------------------------------------- */
+
+.views {
+  position: relative;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+.views::-webkit-scrollbar { width: 6px; }
+.views::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+.views::-webkit-scrollbar-track { background: transparent; }
+
+.view {
+  position: absolute; inset: 0;
+  padding: var(--s-6);
+  display: flex; flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(18px, 0, 0);
+  transition:
+    opacity    var(--d-2) var(--e-apple),
+    transform  var(--d-2) var(--e-apple),
+    visibility 0s linear var(--d-2);
+}
+.view.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity   var(--d-3) var(--e-apple) 60ms,
+    transform var(--d-3) var(--e-apple) 60ms,
+    visibility 0s;
+}
+.view.is-out { transform: translate3d(-18px, 0, 0); }
+
+.view .kicker {
+  margin: 0 0 var(--s-3);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gray-2);
+}
+.view .kicker.done-k { color: var(--ok); }
+
+.view h1 {
+  margin: 0 0 var(--s-4);
+  font-size: clamp(30px, 3.4vw, 42px);
+  font-weight: 700; line-height: 1.05; letter-spacing: -0.03em;
+}
+
+.view p {
+  max-width: 54ch;
+  margin: 0 0 var(--s-3);
+  font-size: 15px;
+  color: var(--gray-1);
+}
+.view a { color: var(--white); text-underline-offset: 3px; }
+
+.view .warn {
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid rgba(255, 106, 19, 0.35);
+  border-radius: var(--r-2);
+  background: rgba(255, 106, 19, 0.06);
+  color: #FFC79B;
+}
+
+.acts {
+  display: flex; flex-wrap: wrap; gap: var(--s-2);
+  margin-top: auto;
+  padding-top: var(--s-4);
+}
+
+/* ==========================================================================
+   Flash view: page map
+   One cell per 512-byte page, so the readout is the operation itself rather
+   than a bar standing in for it. Where it stops is where the write stopped.
+   ========================================================================== */
+
+.pagemap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17px, 1fr));
+  gap: 5px;
+  margin: var(--s-2) 0 var(--s-3);
+}
+.pagemap i {
+  aspect-ratio: 1;
+  border-radius: var(--r-cell);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  transition: background var(--d-1) var(--e-out),
+              box-shadow var(--d-1) var(--e-out);
+}
+.pagemap i.on {
+  background: var(--white);
+  box-shadow: inset 0 0 0 1px var(--white);
+  animation: cellOn var(--d-2) var(--e-apple);
+}
+@keyframes cellOn { from { transform: scale(0.55); } to { transform: scale(1); } }
+
+/* The write head: the page currently going out. Outline only, no pulse. */
+.pagemap i.next { box-shadow: inset 0 0 0 2px var(--accent); }
+
+/* On success the green sweeps across in write order rather than snapping. */
+.pagemap.is-done i.on {
+  animation: none;
+  transition-delay: calc(var(--i) * 5ms);
+}
+.pagemap i.fail    { background: var(--err);    box-shadow: inset 0 0 0 1px var(--err); }
+.pagemap.is-done i.on { background: var(--ok);  box-shadow: inset 0 0 0 1px var(--ok); }
+
+/* Chip erase reports no position, so the map sweeps rather than pretending
+   to one. Opacity only. */
+.pagemap.is-erasing i {
+  box-shadow: inset 0 0 0 1px var(--accent);
+  animation: sweep 1.2s linear infinite;
+  animation-delay: calc(var(--i) * 9ms);
+}
+@keyframes sweep { 0%, 100% { opacity: 0.22; } 50% { opacity: 1; } }
+
+.view .readout {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2) var(--s-5);
+  max-width: none;
+  margin: 0 0 var(--s-3);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--gray-2);
+}
+.view .readout b {
+  font-size: 19px; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--white);
+}
+.view .readout .ph {
+  margin-left: auto;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+body[data-state="live"]  .view .readout .ph { color: var(--accent); }
+body[data-state="ok"]    .view .readout .ph { color: var(--ok); }
+body[data-state="error"] .view .readout .ph { color: var(--err); }
+
+.mini { margin: 0; }
+.mini > div {
+  display: flex; align-items: baseline; gap: var(--s-4);
+  padding: 2px 0;
+}
+.mini dt {
+  min-width: 7ch;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gray-2);
+}
+.mini dd {
+  margin: 0;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px; color: var(--white);
+  font-variant-numeric: tabular-nums;
+}
+
+.view .inline-err {
+  max-width: none;
+  margin: var(--s-3) 0 0;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid rgba(255, 69, 58, 0.4);
+  border-radius: var(--r-2);
+  background: rgba(255, 69, 58, 0.08);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px;
+  color: #FFB4AE;
+}
+.view .inline-err[hidden] { display: none; }
+
+.noscript {
+  max-width: 62ch;
+  margin: var(--s-5) auto 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-2);
+  font-size: 14px;
+  color: var(--gray-1);
+  text-align: center;
+}
+
+/* ==========================================================================
+   Controls
+   ========================================================================== */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--r-2);
+  font: inherit; font-size: 14px; font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--d-1) var(--e-out),
+              border-color var(--d-1) var(--e-out),
+              color var(--d-1) var(--e-out),
+              opacity var(--d-1) var(--e-out),
+              transform 90ms var(--e-out);
+}
+.btn.solid { background: var(--white); color: var(--black); }
+.btn.solid:not(:disabled):hover { background: #fff; }
+.btn.ghost { background: transparent; color: var(--white); border-color: var(--line-2); }
+.btn.ghost:hover { border-color: var(--white); }
+.btn:not(:disabled):active { transform: scale(0.972); }
+.filebtn:active { transform: scale(0.972); }
+.btn, .filebtn { transform: scale(1); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.filebtn { position: relative; }
+.filebtn input {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip-path: inset(50%);
+  overflow: hidden; white-space: nowrap;
+}
+.filebtn:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-color: var(--white);
+}
+
+/* A ring, not a dashed spinner: same language as the gauge. */
+.btn.hold { position: relative; overflow: hidden; }
+.btn.hold .hold-fill {
+  position: absolute; inset: 0;
+  background: var(--accent);
+  transform: scaleX(var(--hold, 0));
+  transform-origin: left;
+  transition: transform var(--hold-dur, 140ms) linear,
+              opacity var(--d-2) var(--e-out);
+  pointer-events: none;
+}
+.btn.hold .hold-label { position: relative; z-index: 1; }
+.btn.hold.is-armed .hold-fill { opacity: 0; }
+
+.ring-sm {
+  width: 14px; height: 14px; display: none; flex: none;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: spin 700ms linear infinite;
+}
+.btn.loading .ring-sm { display: block; }
 .btn.loading { pointer-events: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.fileinput {
-  display: inline-flex; align-items: center; gap: 4px;
-  font: 500 12px/1 "IBM Plex Mono", ui-monospace, monospace;
-  letter-spacing: 0.03em;
-  color: var(--fg); background: transparent;
-  border: 1px solid var(--line);
-  padding: 9px 14px; border-radius: 6px;
-  transition: transform 0.18s var(--ease-spring),
-              border-color 0.18s var(--ease-smooth);
-}
-.fileinput:hover { transform: translateY(-1px); border-color: var(--accent); }
-.fileinput input { display: none; }
+/* ==========================================================================
+   Bottom strip
+   ========================================================================== */
 
-/* Progress bar (animated stripe when active) */
-.progress {
-  height: 3px; width: 100%;
-  background: var(--code-bg);
-  border-radius: 3px; overflow: hidden;
-  margin: 12px 0 4px;
+.box-bot {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-4);
+  padding: var(--s-3) var(--s-5);
+  border-top: 1px solid var(--line-1);
 }
-.progress > div {
-  height: 100%; width: 0;
-  background: var(--accent);
-  background-image: linear-gradient(
-    45deg,
-    rgba(255,255,255,0.14) 25%, transparent 25%,
-    transparent 50%, rgba(255,255,255,0.14) 50%,
-    rgba(255,255,255,0.14) 75%, transparent 75%);
-  background-size: 12px 12px;
-  animation: stripe 0.9s linear infinite;
-  transition: width 0.2s var(--ease-smooth);
-}
-.progress.idle > div { background: transparent; animation: none; }
-@keyframes stripe { to { background-position: 12px 0; } }
-.progress > div {
-  height: 100%; width: 0;
-  background: var(--accent);
-  transition: width 0.15s linear;
-}
-.progress-label {
+
+.footstat {
+  margin: 0;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 10.5px;
-  color: var(--muted);
-  letter-spacing: 0.06em;
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gray-2);
 }
 
-/* Console */
-#console {
-  background: var(--panel);
-  border: 1px solid var(--line-2);
-  padding: 10px 12px;
-  border-radius: 4px;
-  height: 130px;
-  overflow: auto;
+.botbtns { display: flex; gap: var(--s-1); }
+.tabbtn {
+  padding: 6px 12px;
+  background: transparent; border: 1px solid transparent; border-radius: var(--r-2);
+  font: inherit; font-size: 13px; color: var(--gray-2);
+  text-decoration: none; cursor: pointer;
+  transition: color var(--d-1) var(--e-out), border-color var(--d-1) var(--e-out);
+}
+.tabbtn:hover { color: var(--white); }
+.tabbtn[aria-expanded="true"] { color: var(--white); border-color: var(--line-2); }
+
+/* ==========================================================================
+   Drawers: slide up over the box, never resize it
+   ========================================================================== */
+
+.drawer {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  z-index: 5;
+  max-height: 68%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--surface-2);
+  border-top: 1px solid var(--line-2);
+  transform: translateY(100%);
+  visibility: hidden;
+  transition: transform var(--d-2) var(--e-apple),
+              visibility 0s linear var(--d-2);
+}
+.drawer.is-open {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--d-2) var(--e-apple), visibility 0s;
+}
+
+.drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-3) var(--s-5);
+  border-bottom: 1px solid var(--line-1);
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 12px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-all;
-  color: var(--fg-2);
-  margin-top: 14px;
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gray-2);
 }
-#console.hidden { display: none; }
-#console .ts  { color: var(--muted); }
-#console .err { color: var(--err-fg); }
-#console .ok  { color: var(--ok-fg); }
-
-/* Footer sits BELOW the card, not inside it, so the card can hug its content */
-.legal {
-  width: 100%;
-  max-width: 800px;
-  margin: 14px auto 0;
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.55;
-  text-align: center;
+.drawer-head .x {
+  width: 26px; height: 26px;
+  background: transparent; border: 0; border-radius: var(--r-1);
+  color: var(--gray-2); font-size: 18px; line-height: 1; cursor: pointer;
+  transition: color var(--d-1) var(--e-out);
 }
-.legal p { margin: 0; }
-.legal a { color: var(--accent-2); }
+.drawer-head .x:hover { color: var(--white); }
 
-code {
+.drawer-log {
+  overflow: auto; overscroll-behavior: contain;
+  padding: var(--s-3) var(--s-5) var(--s-4);
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 12.5px;
-  background: var(--code-bg); color: var(--code-fg);
-  padding: 1px 5px; border-radius: 3px;
+  font-size: 12.5px; line-height: 1.6;
+  color: var(--gray-1);
+  white-space: pre-wrap; word-break: break-word;
 }
+.drawer-log .ts  { color: var(--gray-2); }
+.drawer-log .err { color: var(--err); }
+.drawer-log .ok  { color: var(--ok); }
 
-/* -------- Responsive: brand collapses to top band -------- */
-@media (max-width: 820px) {
-  body { padding: 16px; }
-  .card { grid-template-columns: 1fr; max-width: 640px; }
-  .brand {
-    min-height: 0;
-    padding: 22px 22px 20px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: "id art" "specs specs" "foot foot";
-    gap: 14px 20px;
+.dl-list {
+  list-style: none; margin: 0; padding: 0;
+  overflow: auto; overscroll-behavior: contain;
+}
+.dl-list li + li { border-top: 1px solid var(--line-1); }
+.dl-list a {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2) var(--s-5);
+  padding: var(--s-3) var(--s-5);
+  text-decoration: none;
+  transition: background var(--d-1) var(--e-out);
+}
+.dl-list a:hover { background: var(--surface-3); }
+.dl-list b {
+  min-width: 19ch;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 14px; font-weight: 600;
+}
+.dl-list span { font-size: 14px; color: var(--gray-1); }
+
+/* ==========================================================================
+   Narrow and short viewports
+   ========================================================================== */
+
+@media (max-width: 860px) {
+  .box { max-height: 720px; }
+  .box-body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+  .slab {
+    border-right: 0; border-bottom: 1px solid var(--line-1);
+    grid-template-rows: none;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
   }
-  .brand .id { grid-area: id; }
-  .brand .art { grid-area: art; margin: 0; }
-  .brand .art svg { width: 90px; }
-  .brand .specs { grid-area: specs; }
-  .brand .foot { grid-area: foot; }
-  .brand h1.wordmark { font-size: 28px; }
-  .content { padding: 22px; }
+  /* The figure is a desktop affordance. Squeezed into this band its labels
+     land at about 4px, which is worse than not showing them, and the viewBox
+     reserves their width whether they are drawn or not. The spec list is the
+     part that still reads, so it takes the whole band. */
+  .fig { display: none; }
+  .spec { grid-column: 1 / -1; border-top: 0; }
+  .spec > div { padding: var(--s-2) var(--s-4); }
+  .spec > div:nth-child(odd) { border-right: 1px solid var(--line-1); }
+  .spec > div:nth-child(n+3) { border-top: 1px solid var(--line-1); }
+  .spec dt, .spec dd { font-size: 13px; }
+  .view { padding: var(--s-5); }
+  .pagemap { grid-template-columns: repeat(auto-fill, minmax(14px, 1fr)); gap: 4px; }
+  .view .readout b { font-size: 17px; }
+  .legal { font-size: 11px; }
+}
+
+@media (max-width: 560px) {
+  .stage { padding: var(--s-3); }
+  .rail { padding: var(--s-3) var(--s-4); }
+  .rail li b { display: none; }
+  /* With the labels gone the button is just the pip, which falls under the
+     24px touch minimum. The negative margin cancels the padding, so the pip
+     does not move and the track needs no compensation. */
+  .railbtn { padding: 5px var(--s-2) 5px 0; margin: -5px 0; }
+  .box-bot { flex-wrap: wrap; }
+  .view .readout .ph { margin-left: 0; }
+}
+
+/* Short viewports: tighten the chrome so the wizard still fits without the
+   panel having to scroll. Density step, not a different layout. */
+@media (max-height: 700px) {
+  .box-top, .box-bot { padding-top: var(--s-2); padding-bottom: var(--s-2); }
+  .rail { padding: var(--s-3) var(--s-6); }
+  .view { padding: var(--s-4) var(--s-6); }
+  .view h1 { font-size: 30px; margin-bottom: var(--s-3); }
+  .fig { padding: var(--s-3) var(--s-4) 0; }
+}
+
+@media (max-height: 560px) {
+  .stage { padding: var(--s-3); }
+  .legal { display: none; }
+  .box { max-height: none; }
+}
+
+/* ==========================================================================
+   Reduced motion: state still reads, nothing slides
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+  .device .shell *, .device .board *, .device .part *,
+  .device .trace *, .device .passive * {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
 }
