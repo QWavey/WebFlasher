@@ -6,6 +6,12 @@
    Every literal below belongs to the system documented in DESIGN.md.
    ========================================================================== */
 
+@property --fill {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
 :root {
   /* --- Surface ---------------------------------------------------------- */
   --black:     #000000;   /* page. True black, the way hardware pages are lit */
@@ -361,17 +367,18 @@ body[data-state="error"] .device .led { fill: var(--err); }
   transition: background var(--d-2) var(--e-out),
               box-shadow var(--d-2) var(--e-out);
 }
-.rail li.on   { color: var(--accent); }
+.rail li.on { color: var(--accent); }
+
 /* The pip you are on doubles as the overall progress dial: a quarter filled on
-   Brief, a half on DFU, three quarters on Connect, solid white on Flash. The
-   ring stays accent so the step you are on is still the thing marked. */
+   Brief, a half on DFU, three quarters on Connect, solid white on Flash. It
+   sweeps between them because --fill is a registered <number>. The track ring
+   is neutral, so the dial reads as one white arc rather than a ringed blob. */
+.rail li { transition: --fill var(--d-3) var(--e-apple); }
 .rail li.on .pip {
   background:
     conic-gradient(var(--white) calc(var(--fill, 0) * 1%), rgba(0, 0, 0, 0) 0),
     var(--surface-1);
-  box-shadow: inset 0 0 0 2px currentColor;
-  transition: background var(--d-3) var(--e-apple),
-              box-shadow var(--d-2) var(--e-out);
+  box-shadow: inset 0 0 0 2px var(--line-2);
 }
 .rail li.done { color: var(--white); }
 .rail li.done .pip { background: currentColor; box-shadow: inset 0 0 0 2px currentColor; }
