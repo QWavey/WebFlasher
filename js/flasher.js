@@ -317,15 +317,21 @@ function parseHex(text) {
   return { base, bytes };
 }
 
-// Offset into flash, or a refusal the user can act on.
+// Offset into flash, or a refusal the user can act on. The base is an absolute
+// address inside the flash window at 0x80000000, as the README documents. A
+// base below that window is refused, not read as a flash-relative offset. A
+// base that is not 512-byte aligned is refused too, so no block can straddle
+// a 64 KB boundary.
 function flashOffsetFor(base, length) {
-  const offset = base >= FLASH_BASE ? base - FLASH_BASE : base;
-
-  if (offset < 0 || offset >= FLASH_SIZE) {
+  if (base < FLASH_BASE || base - FLASH_BASE >= FLASH_SIZE) {
     throw new Error(
       `based at 0x${base.toString(16)}, outside the ${FLASH_SIZE / 1024} KB flash ` +
       `window at 0x${FLASH_BASE.toString(16)}`
     );
+  }
+  const offset = base - FLASH_BASE;
+  if (offset % PAGE !== 0) {
+    throw new Error(`based at 0x${base.toString(16)}, which is not ${PAGE}-byte aligned`);
   }
   if (offset < BOOT_RESERVE) {
     throw new Error(

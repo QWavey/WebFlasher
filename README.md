@@ -47,6 +47,7 @@ The flasher refuses an image before it writes anything if:
 - any Intel-HEX record fails its checksum, is malformed, or the file has no
   end-of-file record;
 - the base address falls outside the 256 KB flash window at `0x80000000`;
+- the base address is not a multiple of 512 bytes, the flash page size;
 - the image reaches into the first 8 KB, which is the DFU bootloader — writing
   there removes the only way back onto the part;
 - the image runs past the end of flash.
