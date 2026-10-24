@@ -401,6 +401,9 @@ async function chipErase() {
   log('erase: done', 'ok');
 }
 
+// The framings below are NOT verified against an AT32UC3B. dfu-programmer's
+// atmel.c appears to use a 4-byte select-unit and a 5-byte select-page. Left as
+// they are until a real board confirms the bytes (see README, "Known unknown").
 async function selectRegion(region) {
   await atmelWrite(new Uint8Array([0x06, 0x03, region]));
 }
