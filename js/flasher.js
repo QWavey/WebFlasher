@@ -244,6 +244,8 @@ const DFU_PIDS = [0x2FF6, 0x2FF7, 0x2FF8, 0x2FF1, 0x2FFA, 0x2FFB];
 const DFU_DNLOAD    = 0x01;
 const DFU_GETSTATUS = 0x03;
 const DFU_CLRSTATUS = 0x04;
+const DFU_STATE_IDLE        = 2;   // dfuIDLE
+const DFU_STATE_DNLOAD_IDLE = 5;   // dfuDNLOAD-IDLE
 
 // AT32UC3B1256: 256 KB of flash mapped at 0x80000000, with the DFU bootloader
 // in the first 8 KB. Writing into that would remove the only way back onto the
@@ -344,13 +346,18 @@ async function ctrl(setup, data) {
     requestType: 'class', recipient: 'interface',
     request: setup.bRequest, value: setup.wValue, index: iface
   };
-  if (data) return device.controlTransferOut(req, data);
-  return device.controlTransferIn(req, setup.wLength);
+  const r = data
+    ? await device.controlTransferOut(req, data)
+    : await device.controlTransferIn(req, setup.wLength);
+  // A stalled or babbling transfer is a failure, not a success with no data.
+  if (r.status !== 'ok') throw new Error(`DFU request ${setup.bRequest} failed: ${r.status}`);
+  return r;
 }
 
 async function dfuStatus() {
   const r = await ctrl({ bRequest: DFU_GETSTATUS, wValue: 0, wLength: 6 });
-  const v = new Uint8Array(r.data.buffer);
+  if (!r.data || r.data.byteLength < 6) throw new Error('short DFU status reply');
+  const v = new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength);
   return { status: v[0], pollTimeout: v[1] | (v[2] << 8) | (v[3] << 16), state: v[4] };
 }
 
@@ -362,7 +369,7 @@ async function waitIdle() {
   for (let i = 0; i < 200; i++) {
     const s = await dfuStatus();
     if (s.status !== 0) throw new Error('DFU error status ' + s.status);
-    if (s.state === 2 || s.state === 5) return s;
+    if (s.state === DFU_STATE_IDLE || s.state === DFU_STATE_DNLOAD_IDLE) return s;
     await new Promise(r => setTimeout(r, Math.max(5, s.pollTimeout)));
   }
   throw new Error('DFU did not go idle');
@@ -508,22 +515,34 @@ $('btnConnect').onclick = async () => {
   const btn = $('btnConnect');
   btn.classList.add('loading');
   try {
-    device = await navigator.usb.requestDevice({
+    const picked = await navigator.usb.requestDevice({
       filters: DFU_PIDS.map(p => ({ vendorId: VID, productId: p }))
     });
-    await device.open();
-    if (device.configuration === null) await device.selectConfiguration(1);
+    // The picked unit becomes the connection only once it is open with its DFU
+    // interface claimed. If any step fails, it is closed again rather than left
+    // open behind the next Connect.
+    try {
+      await picked.open();
+      if (picked.configuration === null) await picked.selectConfiguration(1);
 
-    for (const c of device.configurations) {
-      for (const i of c.interfaces) {
+      // Only the active configuration is searched, and a device with no DFU
+      // interface is refused rather than claimed on a leftover interface number.
+      let dfuIface = null;
+      for (const i of picked.configuration.interfaces) {
         for (const a of i.alternates) {
           if (a.interfaceClass === 0xFE && a.interfaceSubclass === 0x01) {
-            iface = i.interfaceNumber;
+            dfuIface = i.interfaceNumber;
           }
         }
       }
+      if (dfuIface === null) throw new Error('no DFU interface on this device');
+      await picked.claimInterface(dfuIface);
+      iface = dfuIface;
+    } catch (e) {
+      try { await picked.close(); } catch (_) {}
+      throw e;
     }
-    await device.claimInterface(iface);
+    device = picked;
 
     const id = `${device.vendorId.toString(16).padStart(4, '0')}:${device.productId.toString(16).padStart(4, '0')}`;
     log(`connect: ${id}, interface ${iface}`, 'ok');
