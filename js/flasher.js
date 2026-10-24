@@ -113,8 +113,15 @@ function syncRail(n) {
   });
 }
 
+// While a write runs, the wizard cannot move and the device cannot change.
+// The buttons that could do either are disabled as well (see lockWizard).
+function lockWizard(on) {
+  document.querySelectorAll('[data-go], #btnConnect, #fileHex').forEach(el => { el.disabled = on; });
+}
+
 function goTo(n) {
   if (n === step) return;
+  if (flashing) return;
   const from = views.find(v => +v.dataset.step === step);
   const to   = views.find(v => +v.dataset.step === n);
   if (!to) return;
@@ -495,6 +502,7 @@ setPhase('ready');
 $('btnConfirmPlug').onclick = () => goTo(2);
 
 $('btnConnect').onclick = async () => {
+  if (flashing) return;
   const btn = $('btnConnect');
   btn.classList.add('loading');
   try {
@@ -546,6 +554,12 @@ $('btnConnect').onclick = async () => {
 $('fileHex').onchange = async ev => {
   const f = ev.target.files[0];
   if (!f) return;
+  if (flashing) {
+    // Swapping the image mid-write would rebuild the page map under a write in progress.
+    log('flash in progress: the image cannot change until it ends', 'err');
+    ev.target.value = '';
+    return;
+  }
   try {
     const parsed = parseHex(await f.text());
     flashOffsetFor(parsed.base, parsed.bytes.length);   // refuse early, not mid-flash
@@ -571,6 +585,7 @@ async function runFlash() {
 
   btn.disabled = true;
   flashing = true;
+  lockWizard(true);
   mapState(null);
   showFlashError(null);
   setStatus('Flashing', 'live');
@@ -607,6 +622,7 @@ async function runFlash() {
     btn.disabled = false;
   } finally {
     flashing = false;
+    lockWizard(false);
   }
 }
 
