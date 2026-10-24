@@ -339,6 +339,7 @@ function flashOffsetFor(base, length) {
 
 // ---- Transfers ------------------------------------------------------------
 async function ctrl(setup, data) {
+  if (!device) throw new Error(stopping ? 'stopped' : 'device is not connected');
   const req = {
     requestType: 'class', recipient: 'interface',
     request: setup.bRequest, value: setup.wValue, index: iface
@@ -415,6 +416,7 @@ async function programAll(bytes, base) {
   setPhase('programming');
   buildPageMap(totalPages);
   for (let off = 0; off < total; off += PAGE) {
+    if (stopping) throw new Error('stopped');
     const abs = flashBase + off;
     const page16k = abs >> 16;
     if (page16k !== curPage16k) {
@@ -585,6 +587,7 @@ async function runFlash() {
 
   btn.disabled = true;
   flashing = true;
+  stopping = false;
   lockWizard(true);
   mapState(null);
   showFlashError(null);
@@ -611,15 +614,22 @@ async function runFlash() {
       setTimeout(() => goTo(4), 700);
     }
   } catch (e) {
-    const msg = (e && e.message) ? e.message : String(e);
-    log('flash: ' + msg, 'err');
-    showFlashError(msg);
-    setPhase('failed');
-    // The map keeps every page it managed to write and marks the one it died
-    // on: where it stopped is the most useful thing to know afterwards.
-    mapState('error');
-    setStatus('Flash failed', 'error');
-    btn.disabled = false;
+    if (stopping) {
+      // A stop is an outcome of its own, not an error. The part is left holding
+      // a partial image. stopFlash has already cleared the boxes and the status.
+      log('flash stopped. the image is incomplete, redo it.', 'err');
+    } else {
+      const msg = (e && e.message) ? e.message : String(e);
+      log('flash: ' + msg, 'err');
+      showFlashError(msg);
+      setPhase('failed');
+      // The map keeps every page it managed to write and marks the one it died
+      // on: where it stopped is the most useful thing to know afterwards.
+      mapState('error');
+      setStatus('Flash failed', 'error');
+    }
+    // Flash is only offered while a device is still connected.
+    btn.disabled = !device;
   } finally {
     flashing = false;
     lockWizard(false);
@@ -636,19 +646,20 @@ function clearPageMap() {
   setPhase('ready'); showFlashError(null);
 }
 async function stopFlash() {
-  // Abort an in-flight program by closing the USB device (the next control
-  // transfer then throws and its catch marks the error), then wipe the boxes.
-  if (flashing) {
+  // Abort an in-flight program by closing the USB device. The transfer in
+  // flight fails, and runFlash's catch reports it as a stop. `flashing` stays
+  // set until runFlash has unwound, so Connect cannot attach a new device while
+  // the old write is still finishing.
+  if (flashing && !stopping) {
     stopping = true;
     log('stop: aborting flash', 'err');
-    try { if (device) await device.close(); } catch (_) {}
+    const d = device;
     device = null;
+    try { if (d) await d.close(); } catch (_) {}
   }
-  flashing = false;
   clearPageMap();
   setStatus(device ? 'Connected' : 'No device', device ? 'ok' : 'idle');
   $('btnFlash').disabled = !device;
-  stopping = false;
 }
 const _btnStop = $('btnStop'); if (_btnStop) _btnStop.addEventListener('click', stopFlash);
 
