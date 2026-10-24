@@ -254,6 +254,9 @@ const FLASH_BASE   = 0x80000000;
 const FLASH_SIZE   = 0x40000;
 const BOOT_RESERVE = 0x2000;
 const PAGE = 512;
+// Largest Intel-HEX file the page will read. A full 256 KB image in 16- or
+// 32-byte records is under 1 MB of text, so this leaves room to spare.
+const MAX_HEX_BYTES = 2 * 1024 * 1024;
 
 let device = null;
 let iface  = 0;
@@ -312,6 +315,9 @@ function parseHex(text) {
   const addrs = [...map.keys()].sort((a, b) => a - b);
   const base = addrs[0];
   const end  = addrs[addrs.length - 1];
+  // Refuse the image before its span is allocated, so a file whose records sit
+  // far apart cannot ask for a huge buffer first.
+  flashOffsetFor(base, end - base + 1);
   const bytes = new Uint8Array(end - base + 1).fill(0xFF);
   for (const [a, b] of map) bytes[a - base] = b;
   return { base, bytes };
@@ -584,6 +590,11 @@ $('fileHex').onchange = async ev => {
   if (flashing) {
     // Swapping the image mid-write would rebuild the page map under a write in progress.
     log('flash in progress: the image cannot change until it ends', 'err');
+    ev.target.value = '';
+    return;
+  }
+  if (f.size > MAX_HEX_BYTES) {
+    log(`${f.name}: ${f.size.toLocaleString()} bytes is too large for a flash image`, 'err');
     ev.target.value = '';
     return;
   }
