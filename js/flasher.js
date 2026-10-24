@@ -594,6 +594,14 @@ async function runFlash() {
   setStatus('Flashing', 'live');
 
   try {
+    // A write that failed leaves the part in an error state, and the part then
+    // refuses the next write until the status is cleared. Clear it here so a
+    // retry does not need a reconnect. Like Connect, an odd reply is not fatal.
+    try {
+      const s = await dfuStatus();
+      if (s.status !== 0) await dfuClrStatus();
+    } catch (_) { /* a stale or odd GETSTATUS reply is not fatal here */ }
+
     await chipErase();
     await programAll(hexBytes, hexBase);
     await launchDevice();
